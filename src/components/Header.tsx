@@ -1,16 +1,16 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { User, LogOut, Settings, Ticket, Menu, X } from 'lucide-react';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuthStore } from '../stores/authStore';
 
 export const Header: React.FC = () => {
-  const { user, isAuthenticated, logout } = useAuth();
+  const { user, isAuthenticated, logout } = useAuthStore();
   const navigate = useNavigate();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await logout();
     setIsDropdownOpen(false);
     navigate('/');
   };
@@ -159,9 +159,10 @@ export const Header: React.FC = () => {
                 </Link>
                 
                 <button
-                  onClick={() => {
-                    handleLogout();
+                  onClick={async () => {
+                    await logout();
                     setIsMobileMenuOpen(false);
+                    navigate('/');
                   }}
                   className="flex items-center space-x-3 w-full px-2 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors duration-200"
                 >

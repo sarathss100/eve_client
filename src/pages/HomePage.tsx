@@ -2,10 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { Calendar, MapPin, Users, Search, Filter } from 'lucide-react';
 import { Event, Ticket } from '../types';
 import { EventCard } from '../components/EventCard';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuthStore } from '../stores/authStore';
 
 export const HomePage: React.FC = () => {
-  const { isAuthenticated, token, user } = useAuth();
+  const { isAuthenticated, token, user } = useAuthStore();
   const [events, setEvents] = useState<Event[]>([]);
   const [userTickets, setUserTickets] = useState<Ticket[]>([]);
   const [loading, setLoading] = useState(true);

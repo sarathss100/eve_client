@@ -4,7 +4,7 @@ export interface User {
   email: string;
   phone_number?: string;
   role: 'organizer' | 'attendee';
-  joined_date: Date | undefined;
+  joined_date: Date;
 }
 
 export interface Event {

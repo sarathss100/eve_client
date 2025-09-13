@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { Plus, Edit, Trash2, Users, Calendar, BarChart3, Settings } from 'lucide-react';
 import { Event, User } from '../types';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuthStore } from '../stores/authStore';
 
 export const DashboardPage: React.FC = () => {
-  const { user, token, updateUser } = useAuth();
+  const { user, token, updateUser } = useAuthStore();
   const [activeTab, setActiveTab] = useState<'events' | 'users'>('events');
   const [events, setEvents] = useState<Event[]>([]);
   const [users, setUsers] = useState<User[]>([]);
@@ -80,7 +80,7 @@ export const DashboardPage: React.FC = () => {
     }
   };
 
-  const formatDate = (dateString: string) => {
+  const formatDate = (dateString: string | Date) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',
@@ -214,7 +214,7 @@ export const DashboardPage: React.FC = () => {
                       </tr>
                     ) : (
                       events.map((event) => (
-                        <tr key={event._id} className="hover:bg-gray-50 transition-colors duration-200">
+                        <tr key={event.event_id} className="hover:bg-gray-50 transition-colors duration-200">
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div>
                               <div className="text-sm font-medium text-gray-900">{event.title}</div>
@@ -323,7 +323,7 @@ export const DashboardPage: React.FC = () => {
                           </span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {formatDate(userItem.createdAt)}
+                          {formatDate(userItem.joined_date)}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                           <select

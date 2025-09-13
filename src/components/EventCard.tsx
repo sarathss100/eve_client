@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Calendar, MapPin, Users, Clock, Ticket } from 'lucide-react';
 import { Event } from '../types';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuthStore } from '../stores/authStore';
 import { TicketModal } from './TicketModal';
 
 interface EventCardProps {
@@ -17,7 +17,7 @@ export const EventCard: React.FC<EventCardProps> = ({
   onBookEvent, 
   isProcessing = false
 }) => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated } = useAuthStore();
   const [showTicketModal, setShowTicketModal] = useState(false);
 
   const formatDate = (dateString: string) => {

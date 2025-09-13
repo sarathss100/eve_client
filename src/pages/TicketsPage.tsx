@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { Ticket, Calendar, MapPin, Clock, Download, Eye } from 'lucide-react';
 import { Ticket as TicketType, Event } from '../types';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuthStore } from '../stores/authStore';
 import { TicketModal } from '../components/TicketModal';
 
 export const TicketsPage: React.FC = () => {
-  const { token } = useAuth();
+  const { token } = useAuthStore();
   const [tickets, setTickets] = useState<TicketType[]>([]);
   const [events, setEvents] = useState<{ [key: string]: Event }>({});
   const [loading, setLoading] = useState(true);
@@ -41,7 +41,7 @@ export const TicketsPage: React.FC = () => {
           
           if (eventResponse.ok) {
             const eventData = await eventResponse.json();
-            eventsMap[eventId] = eventData;
+            eventsMap[event_id] = eventData;
           }
         }
 
@@ -214,7 +214,7 @@ export const TicketsPage: React.FC = () => {
                     {isEventPast(event.date) && ticket.status === 'booked' && (
                       <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
                         <p className="text-sm text-yellow-800">
-                          <strong>Notice:</strong> This event has already passed. If you attended, your ticket status should be updated to "used".
+                          <strong>Notice:</strong> This event has already passed.
                         </p>
                       </div>
                     )}
