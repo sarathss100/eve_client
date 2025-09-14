@@ -39,8 +39,7 @@ export const useEventStore = create<EventStore>()(
 
           if (response.ok) {
             const eventData = await response.json();
-            
-            const event = eventData.data;
+            const event = eventData.data.event;
             
             if (event && event.event_id) {
               // Update the events record
@@ -87,8 +86,6 @@ export const useEventStore = create<EventStore>()(
           
           const results = await Promise.allSettled(eventPromises);
           const newEvents: Record<string, Event> = { ...currentEvents };
-
-          console.log(results, newEvents);
           
           results.forEach((result, index) => {
             if (result.status === 'fulfilled' && result.value) {

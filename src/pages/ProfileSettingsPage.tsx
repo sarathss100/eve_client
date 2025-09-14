@@ -1,132 +1,132 @@
-import { Mail, Phone, Calendar, Shield, User as UserIcon } from "lucide-react";
-import { useAuthStore } from "../stores/authStore";
+import { Mail, Phone, Calendar, Shield, UserIcon } from "lucide-react"
+import { useAuthStore } from "../stores/authStore"
 
 export default function ProfileSettingsPage() {
-  const { user } = useAuthStore();
+  const { user } = useAuthStore()
 
   if (!user) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
       </div>
-    );
+    )
   }
 
   const formatDate = (dateString: string | Date) => {
-    if (!dateString) return "Not available";
-    
+    if (!dateString) return "Not available"
+
     try {
-      const date = new Date(dateString);
+      const date = new Date(dateString)
       return new Intl.DateTimeFormat("en-US", {
         year: "numeric",
         month: "long",
         day: "numeric",
-      }).format(date);
+      }).format(date)
     } catch (error) {
-      return "Invalid date";
+      return "Invalid date"
     }
-  };
+  }
 
   const getRoleBadgeColor = (role: string) => {
     return role === "organizer"
       ? "bg-purple-100 text-purple-800 border-purple-200"
-      : "bg-blue-100 text-blue-800 border-blue-200";
-  };
+      : "bg-blue-100 text-blue-800 border-blue-200"
+  }
 
   const getInitials = (name: string) => {
-    if (!name) return "U";
+    if (!name) return "U"
     return name
       .split(" ")
-      .map(part => part.charAt(0))
+      .map((part) => part.charAt(0))
       .join("")
       .toUpperCase()
-      .slice(0, 2);
-  };
+      .slice(0, 2)
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Profile Details Section */}
-      <section className="py-16">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
+      <section className="py-20">
+        <div className="px-6 sm:px-8 lg:px-12">
+          <div className="bg-white rounded-3xl shadow-2xl overflow-hidden border border-gray-100">
             {/* Profile Header */}
-            <div className="bg-gradient-to-r from-blue-600 to-purple-600 px-8 py-12 text-center">
-              <div className="w-24 h-24 bg-white bg-opacity-20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white text-xl font-bold">
-                  {getInitials(user.name)}
+            <div className="bg-gradient-to-r from-blue-600 via-blue-500 to-purple-600 px-12 py-16 text-center relative">
+              <div className="absolute inset-0 bg-gradient-to-br from-black/10 to-transparent"></div>
+              <div className="relative z-10">
+                <div className="w-32 h-32 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-6 backdrop-blur-sm border-2 border-white/40">
+                  <div className="w-24 h-24 bg-blue-600 rounded-full flex items-center justify-center text-white text-2xl font-bold shadow-xl">
+                    {getInitials(user.name)}
+                  </div>
                 </div>
-              </div>
-              <h2 className="text-3xl font-bold text-white mb-2">
-                {user.name || 'Unknown User'}
-              </h2>
-              <div
-                className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium border ${getRoleBadgeColor(user.role || 'attendee')}`}
-              >
-                <Shield size={16} className="mr-2" />
-                {user.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1) : 'Attendee'}
+                <h2
+                  className="text-4xl font-bold text-white mb-4 tracking-tight"
+                  style={{ textShadow: "0 2px 4px rgba(0,0,0,0.3)" }}
+                >
+                  {user.name || "Unknown User"}
+                </h2>
+                <div
+                  className={`inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold border backdrop-blur-sm ${getRoleBadgeColor(user.role || "attendee")}`}
+                >
+                  <Shield size={16} className="mr-2" />
+                  {user.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1) : "Attendee"}
+                </div>
               </div>
             </div>
 
             {/* Profile Information */}
-            <div className="p-8">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="p-12">
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-10">
                 {/* User ID */}
-                <div className="space-y-3">
-                  <div className="flex items-center text-gray-600">
-                    <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center mr-3">
-                      <UserIcon size={20} className="text-gray-600" /> 
+                <div className="group hover:bg-gray-50 rounded-2xl p-6 transition-all duration-300 hover:shadow-md">
+                  <div className="flex items-center text-gray-700 mb-4">
+                    <div className="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center mr-4 group-hover:bg-gray-200 transition-colors duration-300">
+                      <UserIcon size={22} className="text-gray-600" />
                     </div>
-                    <span className="font-medium">User ID</span>
+                    <span className="font-semibold text-lg">User ID</span>
                   </div>
-                  <div className="ml-13 pl-3 border-l-2 border-gray-200">
-                    <p className="text-gray-900 font-mono text-sm bg-gray-50 px-3 py-2 rounded-lg">
-                      {user.user_id ? `...${user.user_id.slice(-8)}` : 'N/A'}
+                  <div className="ml-16">
+                    <p className="text-gray-900 font-mono text-base bg-gray-100 px-4 py-3 rounded-xl border">
+                      {user.user_id ? `...${user.user_id.slice(-8)}` : "N/A"}
                     </p>
                   </div>
                 </div>
 
                 {/* Email */}
-                <div className="space-y-3">
-                  <div className="flex items-center text-gray-600">
-                    <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
-                      <Mail size={20} className="text-blue-600" />
+                <div className="group hover:bg-blue-50 rounded-2xl p-6 transition-all duration-300 hover:shadow-md">
+                  <div className="flex items-center text-gray-700 mb-4">
+                    <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mr-4 group-hover:bg-blue-200 transition-colors duration-300">
+                      <Mail size={22} className="text-blue-600" />
                     </div>
-                    <span className="font-medium">Email Address</span>
+                    <span className="font-semibold text-lg">Email Address</span>
                   </div>
-                  <div className="ml-13 pl-3 border-l-2 border-blue-200">
-                    <p className="text-gray-900 font-medium">
-                      {user.email || 'Not provided'}
-                    </p>
+                  <div className="ml-16">
+                    <p className="text-gray-900 font-medium text-base">{user.email || "Not provided"}</p>
                   </div>
                 </div>
 
                 {/* Phone Number */}
-                <div className="space-y-3">
-                  <div className="flex items-center text-gray-600">
-                    <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mr-3">
-                      <Phone size={20} className="text-green-600" />
+                <div className="group hover:bg-green-50 rounded-2xl p-6 transition-all duration-300 hover:shadow-md">
+                  <div className="flex items-center text-gray-700 mb-4">
+                    <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center mr-4 group-hover:bg-green-200 transition-colors duration-300">
+                      <Phone size={22} className="text-green-600" />
                     </div>
-                    <span className="font-medium">Phone Number</span>
+                    <span className="font-semibold text-lg">Phone Number</span>
                   </div>
-                  <div className="ml-13 pl-3 border-l-2 border-green-200">
-                    <p className="text-gray-900 font-medium">
-                      {user.phone_number || "Not provided"}
-                    </p>
+                  <div className="ml-16">
+                    <p className="text-gray-900 font-medium text-base">{user.phone_number || "Not provided"}</p>
                   </div>
                 </div>
 
                 {/* Joined Date */}
-                <div className="space-y-3">
-                  <div className="flex items-center text-gray-600">
-                    <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center mr-3">
-                      <Calendar size={20} className="text-purple-600" />
+                <div className="group hover:bg-purple-50 rounded-2xl p-6 transition-all duration-300 hover:shadow-md">
+                  <div className="flex items-center text-gray-700 mb-4">
+                    <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center mr-4 group-hover:bg-purple-200 transition-colors duration-300">
+                      <Calendar size={22} className="text-purple-600" />
                     </div>
-                    <span className="font-medium">Member Since</span>
+                    <span className="font-semibold text-lg">Member Since</span>
                   </div>
-                  <div className="ml-13 pl-3 border-l-2 border-purple-200">
-                    <p className="text-gray-900 font-medium">
-                      {formatDate(user.joined_date)}
-                    </p>
+                  <div className="ml-16">
+                    <p className="text-gray-900 font-medium text-base">{formatDate(user.joined_date)}</p>
                   </div>
                 </div>
               </div>
@@ -135,5 +135,5 @@ export default function ProfileSettingsPage() {
         </div>
       </section>
     </div>
-  );
+  )
 }

@@ -1,7 +1,7 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { Header } from './components/Header';
 import { Footer } from './components/Footer';
-import { ProtectedRoute, RoleProtectedRoute } from './components/ProtectedRoute';
+import { ProtectedRoute } from './components/ProtectedRoute';
 import { HomePage } from './pages/HomePage';
 import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
@@ -10,8 +10,6 @@ import { DashboardPage } from './pages/DashboardPage';
 import ProfileSettingsPage from './pages/ProfileSettingsPage';
 import { useAuthStore } from './stores/authStore';
 import { useEffect } from 'react';
-
-// React-Toastify imports
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -73,16 +71,6 @@ function App() {
               </ProtectedRoute>
             } 
           />
-          
-          {/* Role-based protected route example */}
-          {/* <Route 
-            path="/admin" 
-            element={
-              <RoleProtectedRoute allowedRoles={['organizer']}>
-                <AdminPage />
-              </RoleProtectedRoute>
-            } 
-          /> */}
           
           {/* Catch all - redirect to home */}
           <Route path="*" element={<Navigate to="/" replace />} />

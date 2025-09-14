@@ -10,6 +10,7 @@ interface TicketState {
 
 interface TicketActions {
   fetchUserTickets: (token: string) => Promise<void>;
+  fetchUserTicketsForOrganizer: (token: string) => Promise<void>;
   clearTickets: () => void;
   setError: (error: string | null) => void;
   updateTicketStatus: (ticketId: string, status: 'confirmed' | 'cancelled') => void;
@@ -53,6 +54,67 @@ export const useTicketStore = create<TicketStore>()(
           let tickets = null;
     
           tickets = ticketsData.data.ticketDetails;
+          
+          
+          if (!Array.isArray(tickets)) {
+            console.error('Tickets data is not an array:', tickets);
+            set({ 
+              error: 'Invalid tickets data format', 
+              isLoading: false 
+            });
+            return;
+          }
+
+          set({ tickets, isLoading: false });
+
+          const eventIds = [...new Set(tickets.map((ticket: Ticket) => ticket.event_id))];
+          if (eventIds.length > 0) {
+            const { useEventStore } = await import('./eventStore');
+            const eventStore = useEventStore.getState();
+            
+            try {
+              await eventStore.fetchMultipleEvents(eventIds, token);
+            } catch (eventError) {
+              console.error('Failed to fetch event details:', eventError);
+            }
+          }
+          
+        } catch (error) {
+          console.error('Network error fetching tickets:', error);
+          set({ 
+            error: `Network error: ${error instanceof Error ? error.message : 'Please check your connection and try again.'}`,
+            isLoading: false 
+          });
+        }
+      },
+
+      fetchUserTicketsForOrganizer: async (token: string) => {
+        set({ isLoading: true, error: null });
+        
+        try {
+          const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/organizer/tickets`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              'Content-Type': 'application/json',
+            },
+            credentials: 'include',
+          });
+
+          if (!response.ok) {
+            const errorText = await response.text();
+            console.error('Failed to fetch tickets:', response.status, errorText);
+            set({ 
+              error: `Failed to fetch tickets: ${response.status} ${response.statusText}`, 
+              isLoading: false 
+            });
+            return;
+          }
+
+          const ticketsData = await response.json();
+
+          let tickets = null;
+    
+          tickets = ticketsData.data.tickets;
           
           
           if (!Array.isArray(tickets)) {

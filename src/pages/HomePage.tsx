@@ -111,7 +111,6 @@ export const HomePage: React.FC = () => {
           localStorage.setItem(`paymentSessionId_${eventId}`, paymentData.data.session_id);
         }
 
-        alert('Redirecting to payment gateway...');
         window.location.href = checkoutUrl;
       } else {
         throw new Error('No checkout URL received');
@@ -239,9 +238,7 @@ export const HomePage: React.FC = () => {
     const matchesSearch = event.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          event.description.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesLocation = filterLocation === '' || event.location.toLowerCase().includes(filterLocation.toLowerCase());
-    const isFutureEvent = new Date(event.date) >= new Date();
-    
-    return matchesSearch && matchesLocation && isFutureEvent;
+    return matchesSearch && matchesLocation;
   });
 
   // Pagination calculations

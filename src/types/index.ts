@@ -14,8 +14,8 @@ export interface Event {
   description: string;
   date: string;
   location: string;
+  initial_ticket_count: number;
   total_tickets: number;
-  available_tickets: number;
   price: number;
   createdAt: string;
 }

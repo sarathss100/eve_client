@@ -3,6 +3,7 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 import { User } from '../types';
 import { ticketStoreActions } from './ticketStore';
 import { eventStoreActions } from './eventStore';
+import { userStoreActions } from './userStore';
 
 interface AuthState {
   user: User | null;
@@ -142,6 +143,7 @@ export const useAuthStore = create<AuthStore>()(
           useAuthStore.persist.clearStorage();
           ticketStoreActions.clearTickets();
           eventStoreActions.clearEvents();
+          userStoreActions.clearUsers();
         }
       },
 
