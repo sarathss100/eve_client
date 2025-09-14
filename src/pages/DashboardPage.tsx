@@ -344,7 +344,6 @@ export const DashboardPage: React.FC = () => {
           </div>
         )}
 
-        {/* Event Modal would be implemented here */}
         {showEventModal && (
           <div className="fixed inset-0 z-50 overflow-y-auto">
             <div className="flex items-center justify-center min-h-screen px-4">

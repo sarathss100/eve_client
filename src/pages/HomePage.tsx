@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Calendar, MapPin, Users, Search, Filter } from 'lucide-react';
+import { Calendar, MapPin, Users, Search, Filter, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Event, Ticket } from '../types';
 import { EventCard } from '../components/EventCard';
 import { useAuthStore } from '../stores/authStore';
@@ -12,6 +12,10 @@ export const HomePage: React.FC = () => {
   const [isProcessing, setIsProcessing] = useState(false); 
   const [searchTerm, setSearchTerm] = useState('');
   const [filterLocation, setFilterLocation] = useState('');
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const eventsPerPage = 6;
 
   useEffect(() => {
     fetchEvents();
@@ -22,6 +26,11 @@ export const HomePage: React.FC = () => {
     // Check for Stripe return on component mount
     handleStripeReturn();
   }, [isAuthenticated]);
+
+  // Reset to first page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, filterLocation]);
 
   const fetchEvents = async () => {
     try {
@@ -235,6 +244,82 @@ export const HomePage: React.FC = () => {
     return matchesSearch && matchesLocation && isFutureEvent;
   });
 
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredEvents.length / eventsPerPage);
+  const startIndex = (currentPage - 1) * eventsPerPage;
+  const endIndex = startIndex + eventsPerPage;
+  const currentEvents = filteredEvents.slice(startIndex, endIndex);
+
+  // Pagination handlers
+  const goToPage = (page: number) => {
+    setCurrentPage(page);
+    // Scroll to events section
+    const eventsSection = document.getElementById('events-section');
+    if (eventsSection) {
+      eventsSection.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
+  const goToPreviousPage = () => {
+    if (currentPage > 1) {
+      goToPage(currentPage - 1);
+    }
+  };
+
+  const goToNextPage = () => {
+    if (currentPage < totalPages) {
+      goToPage(currentPage + 1);
+    }
+  };
+
+  // Generate page numbers for pagination
+  const getPageNumbers = () => {
+    const pages = [];
+    const maxVisiblePages = 5;
+    
+    if (totalPages <= maxVisiblePages) {
+      // Show all pages if total is less than or equal to maxVisiblePages
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i);
+      }
+    } else {
+      // Show pages around current page
+      let startPage = Math.max(1, currentPage - 2);
+      let endPage = Math.min(totalPages, currentPage + 2);
+      
+      // Adjust if we're at the beginning or end
+      if (currentPage <= 3) {
+        endPage = Math.min(totalPages, 5);
+      }
+      if (currentPage >= totalPages - 2) {
+        startPage = Math.max(1, totalPages - 4);
+      }
+      
+      // Add first page and ellipsis if needed
+      if (startPage > 1) {
+        pages.push(1);
+        if (startPage > 2) {
+          pages.push('...');
+        }
+      }
+      
+      // Add visible pages
+      for (let i = startPage; i <= endPage; i++) {
+        pages.push(i);
+      }
+      
+      // Add ellipsis and last page if needed
+      if (endPage < totalPages) {
+        if (endPage < totalPages - 1) {
+          pages.push('...');
+        }
+        pages.push(totalPages);
+      }
+    }
+    
+    return pages;
+  };
+
   const uniqueLocations = Array.from(new Set(events.map(event => event.location)));
 
   if (loading || isProcessing) {
@@ -311,7 +396,7 @@ export const HomePage: React.FC = () => {
       </section>
 
       {/* Events Section */}
-      <section className="py-16">
+      <section id="events-section" className="py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
@@ -353,6 +438,16 @@ export const HomePage: React.FC = () => {
             </div>
           </div>
 
+          {/* Results summary */}
+          {filteredEvents.length > 0 && (
+            <div className="mb-6 text-gray-600">
+              <p>
+                Showing {startIndex + 1}-{Math.min(endIndex, filteredEvents.length)} of {filteredEvents.length} events
+                {totalPages > 1 && ` (Page ${currentPage} of ${totalPages})`}
+              </p>
+            </div>
+          )}
+
           {/* Events Grid */}
           {filteredEvents.length === 0 ? (
             <div className="text-center py-16">
@@ -368,17 +463,109 @@ export const HomePage: React.FC = () => {
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {filteredEvents.map((event) => (
-                <EventCard
-                  key={event.event_id}
-                  event={event}
-                  userTicket={getUserTicketForEvent(event.event_id)}
-                  onBookEvent={handleBookEvent}
-                  isProcessing={isProcessing}
-                />
-              ))}
-            </div>
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {currentEvents.map((event) => (
+                  <EventCard
+                    key={event.event_id}
+                    event={event}
+                    userTicket={getUserTicketForEvent(event.event_id)}
+                    onBookEvent={handleBookEvent}
+                    isProcessing={isProcessing}
+                  />
+                ))}
+              </div>
+
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <div className="mt-12 flex flex-col items-center space-y-4">
+                  {/* Pagination Info */}
+                  <div className="text-sm text-gray-700">
+                    <p>
+                      Showing <span className="font-medium">{startIndex + 1}</span> to{' '}
+                      <span className="font-medium">{Math.min(endIndex, filteredEvents.length)}</span> of{' '}
+                      <span className="font-medium">{filteredEvents.length}</span> results
+                    </p>
+                  </div>
+
+                  {/* Pagination Controls */}
+                  <nav className="flex items-center justify-center space-x-2">
+                    {/* Previous Button */}
+                    <button
+                      onClick={goToPreviousPage}
+                      disabled={currentPage === 1}
+                      className={`flex items-center px-3 py-2 text-sm font-medium rounded-md ${
+                        currentPage === 1
+                          ? 'text-gray-400 cursor-not-allowed'
+                          : 'text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 hover:text-gray-900'
+                      } transition-colors duration-200`}
+                    >
+                      <ChevronLeft size={16} className="mr-1" />
+                      Previous
+                    </button>
+
+                    {/* Page Numbers */}
+                    <div className="flex space-x-1">
+                      {getPageNumbers().map((page, index) => (
+                        <React.Fragment key={index}>
+                          {page === '...' ? (
+                            <span className="flex items-center justify-center px-3 py-2 text-sm font-medium text-gray-500">
+                              ...
+                            </span>
+                          ) : (
+                            <button
+                              onClick={() => goToPage(page as number)}
+                              className={`flex items-center justify-center px-3 py-2 text-sm font-medium rounded-md transition-colors duration-200 ${
+                                currentPage === page
+                                  ? 'bg-blue-600 text-white border-blue-600'
+                                  : 'text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 hover:text-gray-900'
+                              }`}
+                            >
+                              {page}
+                            </button>
+                          )}
+                        </React.Fragment>
+                      ))}
+                    </div>
+
+                    {/* Next Button */}
+                    <button
+                      onClick={goToNextPage}
+                      disabled={currentPage === totalPages}
+                      className={`flex items-center px-3 py-2 text-sm font-medium rounded-md ${
+                        currentPage === totalPages
+                          ? 'text-gray-400 cursor-not-allowed'
+                          : 'text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 hover:text-gray-900'
+                      } transition-colors duration-200`}
+                    >
+                      Next
+                      <ChevronRight size={16} className="ml-1" />
+                    </button>
+                  </nav>
+
+                  {/* Quick Page Jump (for mobile) */}
+                  {totalPages > 5 && (
+                    <div className="flex items-center space-x-2 md:hidden">
+                      <label htmlFor="page-select" className="text-sm text-gray-700">
+                        Go to page:
+                      </label>
+                      <select
+                        id="page-select"
+                        value={currentPage}
+                        onChange={(e) => goToPage(Number(e.target.value))}
+                        className="px-3 py-1 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      >
+                        {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                          <option key={page} value={page}>
+                            {page}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+                </div>
+              )}
+            </>
           )}
         </div>
       </section>

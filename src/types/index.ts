@@ -15,21 +15,21 @@ export interface Event {
   date: string;
   location: string;
   total_tickets: number;
-  available_tickets?: number;
+  available_tickets: number;
   price: number;
   createdAt: string;
 }
 
 export interface Ticket {
-  _id: string;
   ticket_id: string;
   event_id: string;
   user_id: string;
-  ticket_type: 'attendee';
-  status: 'booked' | 'used' | 'cancelled';
-  price: number;
-  booking_date: string;
+  session_id: string;
+  amount: string;
+  ticket_status: 'confirmed' | 'cancelled';
+  purchased_at: string;
   event?: Event;
+  user?: User;
 }
 
 export interface AuthState {

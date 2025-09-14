@@ -2,8 +2,9 @@ import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Eye, EyeOff, Mail, Lock, User, Phone, UserPlus } from 'lucide-react';
 import { useAuthStore } from '../stores/authStore';
+import { toast } from 'react-toastify';
 
-export const RegisterPage: React.FC = () => {
+export const RegisterPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { register, isLoading } = useAuthStore();
@@ -17,50 +18,102 @@ export const RegisterPage: React.FC = () => {
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [error, setError] = useState('');
 
   // Get the page user was trying to visit before being redirected to register
   const redirectPath = location.state?.from?.pathname || 
                       new URLSearchParams(location.search).get('redirect') || 
-                      '/dashboard';
+                      '/';
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.ChangeEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setError('');
 
-    // Validate passwords match
-    if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match.');
-      return;
-    }
-
-    // Validate password strength
-    if (formData.password.length < 6) {
-      setError('Password must be at least 6 characters long.');
-      return;
-    }
-
-    // Validate required fields
+    // Client-side validation with toast notifications
     if (!formData.name.trim() || !formData.email.trim() || !formData.password) {
-      setError('Please fill in all required fields.');
+      toast.error('Please fill in all required fields.', {
+        position: "top-right",
+        autoClose: 4000,
+      });
+      return;
+    }
+
+    if (formData.password !== formData.confirmPassword) {
+      toast.error('Passwords do not match.', {
+        position: "top-right",
+        autoClose: 4000,
+      });
+      return;
+    }
+
+    if (formData.password.length < 6) {
+      toast.error('Password must be at least 6 characters long.', {
+        position: "top-right",
+        autoClose: 4000,
+      });
+      return;
+    }
+
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email.trim())) {
+      toast.error('Please enter a valid email address.', {
+        position: "top-right",
+        autoClose: 4000,
+      });
       return;
     }
 
     try {
-      const success = await register(
+      const result = await register(
         formData.name.trim(),
         formData.email.trim(),
         formData.phoneNumber.trim(),
         formData.password
       );
-      
-      if (success) {
-        navigate(redirectPath, { replace: true });
+
+      if (result.success) {
+        toast.success('Account created successfully! Welcome to Eve!', {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+        });
+
+        // Clear form data
+        setFormData({
+          name: '',
+          email: '',
+          phoneNumber: '',
+          password: '',
+          confirmPassword: '',
+        });
+
+        // Small delay to show success message before navigation
+        setTimeout(() => {
+          navigate(redirectPath, { replace: true });
+        }, 1500);
       } else {
-        setError('Registration failed. Please try again.');
+        // Show specific error from backend
+        toast.error(result.error || 'Registration failed. Please try again.', {
+          position: "top-right",
+          autoClose: 6000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+        });
       }
     } catch (error) {
-      setError('An error occurred during registration. Please try again.');
+      console.error('Unexpected registration error:', error);
+      toast.error('An unexpected error occurred. Please try again.', {
+        position: "top-right",
+        autoClose: 6000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
     }
   };
 
@@ -70,6 +123,18 @@ export const RegisterPage: React.FC = () => {
       [e.target.name]: e.target.value,
     });
   };
+
+  const getPasswordStrength = (password: string) => {
+    let strength = 0;
+    if (password.length >= 6) strength++;
+    if (password.length >= 8) strength++;
+    if (/[A-Z]/.test(password)) strength++;
+    if (/[0-9]/.test(password)) strength++;
+    if (/[^A-Za-z0-9]/.test(password)) strength++; // Special characters
+    return strength;
+  };
+
+  const passwordStrength = getPasswordStrength(formData.password);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
@@ -87,13 +152,7 @@ export const RegisterPage: React.FC = () => {
 
         {/* Register Form */}
         <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-8">
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {error && (
-              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
-                {error}
-              </div>
-            )}
-
+          <form onSubmit={handleSubmit} className="space-y-6" noValidate>
             {/* Name Field */}
             <div>
               <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
@@ -111,6 +170,7 @@ export const RegisterPage: React.FC = () => {
                   disabled={isLoading}
                   className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                   placeholder="Enter your full name"
+                  autoComplete="name"
                 />
               </div>
             </div>
@@ -132,6 +192,7 @@ export const RegisterPage: React.FC = () => {
                   disabled={isLoading}
                   className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                   placeholder="Enter your email"
+                  autoComplete="email"
                 />
               </div>
             </div>
@@ -152,6 +213,7 @@ export const RegisterPage: React.FC = () => {
                   disabled={isLoading}
                   className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                   placeholder="Enter your phone number"
+                  autoComplete="tel"
                 />
               </div>
             </div>
@@ -173,6 +235,7 @@ export const RegisterPage: React.FC = () => {
                   disabled={isLoading}
                   className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                   placeholder="Create a password (min. 6 characters)"
+                  autoComplete="new-password"
                 />
                 <button
                   type="button"
@@ -202,6 +265,7 @@ export const RegisterPage: React.FC = () => {
                   disabled={isLoading}
                   className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                   placeholder="Confirm your password"
+                  autoComplete="new-password"
                 />
                 <button
                   type="button"
@@ -219,10 +283,26 @@ export const RegisterPage: React.FC = () => {
               <div className="space-y-2">
                 <div className="text-xs text-gray-600">Password strength:</div>
                 <div className="flex space-x-1">
-                  <div className={`h-1 w-1/4 rounded ${formData.password.length >= 6 ? 'bg-green-500' : 'bg-gray-200'}`}></div>
-                  <div className={`h-1 w-1/4 rounded ${formData.password.length >= 8 ? 'bg-green-500' : 'bg-gray-200'}`}></div>
-                  <div className={`h-1 w-1/4 rounded ${/[A-Z]/.test(formData.password) ? 'bg-green-500' : 'bg-gray-200'}`}></div>
-                  <div className={`h-1 w-1/4 rounded ${/[0-9]/.test(formData.password) ? 'bg-green-500' : 'bg-gray-200'}`}></div>
+                  {[1, 2, 3, 4, 5].map((level) => (
+                    <div
+                      key={level}
+                      className={`h-1 w-1/5 rounded ${
+                        passwordStrength >= level
+                          ? passwordStrength <= 2
+                            ? 'bg-red-500'
+                            : passwordStrength <= 3
+                            ? 'bg-yellow-500'
+                            : 'bg-green-500'
+                          : 'bg-gray-200'
+                      }`}
+                    ></div>
+                  ))}
+                </div>
+                <div className="text-xs text-gray-500">
+                  {passwordStrength <= 2 && 'Weak'}
+                  {passwordStrength === 3 && 'Fair'}
+                  {passwordStrength === 4 && 'Good'}
+                  {passwordStrength === 5 && 'Strong'}
                 </div>
               </div>
             )}
@@ -256,7 +336,10 @@ export const RegisterPage: React.FC = () => {
               className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold py-3 px-4 rounded-lg hover:from-blue-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105 disabled:transform-none"
             >
               {isLoading ? (
-                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                <>
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                  <span>Creating Account...</span>
+                </>
               ) : (
                 <>
                   <UserPlus size={20} />

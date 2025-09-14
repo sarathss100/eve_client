@@ -27,7 +27,7 @@ export const TicketModal: React.FC<TicketModalProps> = ({ ticket, event, onClose
     });
   };
 
-  const formatBookingDate = (dateString: string) => {
+  const formatPurchaseDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', {
       month: 'short',
@@ -40,10 +40,8 @@ export const TicketModal: React.FC<TicketModalProps> = ({ ticket, event, onClose
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'booked':
+      case 'confirmed':
         return 'bg-green-100 text-green-800';
-      case 'used':
-        return 'bg-blue-100 text-blue-800';
       case 'cancelled':
         return 'bg-red-100 text-red-800';
       default:
@@ -75,8 +73,8 @@ export const TicketModal: React.FC<TicketModalProps> = ({ ticket, event, onClose
                 <h4 className="text-2xl font-bold mb-1">{event.title}</h4>
                 <p className="text-blue-100 opacity-90">Event Ticket</p>
               </div>
-              <div className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(ticket.status)} text-gray-800`}>
-                {ticket.status.toUpperCase()}
+              <div className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(ticket.ticket_status)} text-gray-800`}>
+                {ticket.ticket_status.toUpperCase()}
               </div>
             </div>
 
@@ -103,7 +101,7 @@ export const TicketModal: React.FC<TicketModalProps> = ({ ticket, event, onClose
                   <span className="text-sm font-medium">Ticket ID:</span>
                 </div>
                 <span className="font-mono text-sm bg-white bg-opacity-20 px-3 py-1 rounded">
-                  {ticket.ticket_id || ticket._id}
+                  {ticket.ticket_id}
                 </span>
               </div>
             </div>
@@ -119,17 +117,17 @@ export const TicketModal: React.FC<TicketModalProps> = ({ ticket, event, onClose
               </h5>
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Type:</span>
-                  <span className="font-medium capitalize">{ticket.ticket_type}</span>
+                  <span className="text-gray-600">Transaction ID:</span>
+                  <span className="font-mono text-xs">{ticket.session_id.slice(0, 20)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Booked On:</span>
-                  <span className="font-medium">{formatBookingDate(ticket.booking_date)}</span>
+                  <span className="text-gray-600">Purchased On:</span>
+                  <span className="font-medium">{formatPurchaseDate(ticket.purchased_at)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Status:</span>
-                  <span className={`px-2 py-1 rounded-full text-xs font-semibold ${getStatusColor(ticket.status)}`}>
-                    {ticket.status.toUpperCase()}
+                  <span className={`px-2 py-1 rounded-full text-xs font-semibold ${getStatusColor(ticket.ticket_status)}`}>
+                    {ticket.ticket_status.toUpperCase()}
                   </span>
                 </div>
               </div>
@@ -144,11 +142,13 @@ export const TicketModal: React.FC<TicketModalProps> = ({ ticket, event, onClose
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-gray-600">Amount Paid:</span>
-                  <span className="font-bold text-green-600">${ticket.price}</span>
+                  <span className="font-bold text-green-600">₹ {ticket.amount}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Payment Status:</span>
-                  <span className="font-medium text-green-600">Completed</span>
+                  <span className="font-medium text-green-600">
+                    {ticket.ticket_status === 'confirmed' ? 'Completed' : 'Refunded'}
+                  </span>
                 </div>
               </div>
             </div>
@@ -172,15 +172,6 @@ export const TicketModal: React.FC<TicketModalProps> = ({ ticket, event, onClose
               className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors duration-200"
             >
               Print Ticket
-            </button>
-            <button
-              onClick={() => {
-                // In a real app, this would generate and download a PDF
-                alert('PDF download feature would be implemented here');
-              }}
-              className="flex-1 bg-gray-600 hover:bg-gray-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors duration-200"
-            >
-              Download PDF
             </button>
           </div>
         </div>

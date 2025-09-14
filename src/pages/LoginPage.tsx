@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, Mail, Lock, LogIn } from 'lucide-react';
 import { useAuthStore } from '../stores/authStore';
+import { toast } from 'react-toastify';
 
-export const LoginPage: React.FC = () => {
+export const LoginPage = () => {
   const navigate = useNavigate();
-  const location = useLocation();
   const { login, isLoading } = useAuthStore();
   
   const [formData, setFormData] = useState({
@@ -13,26 +13,36 @@ export const LoginPage: React.FC = () => {
     password: '',
   });
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState('');
 
-  // Get the page user was trying to visit before being redirected to login
-  const redirectPath = location.state?.from?.pathname || 
-                      new URLSearchParams(location.search).get('redirect') || 
-                      '/';
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.ChangeEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setError('');
 
     try {
-      const success = await login(formData.email, formData.password);
-      if (success) {
-        navigate(redirectPath, { replace: true });
+      const result = await login(formData.email, formData.password);
+
+      if (result.success) {
+        setFormData({ email: '', password: '' });
+        navigate('/');
       } else {
-        setError('Invalid email or password. Please try again.');
+        toast.error(result.error || 'Login failed. Please check your credentials.', {
+          position: "top-right",
+          autoClose: 6000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+        });
       }
     } catch (error) {
-      setError('An error occurred. Please try again.');
+      console.error('Unexpected error:', error);
+      toast.error('An unexpected error occurred. Please try again.', {
+        position: "top-right",
+        autoClose: 6000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
     }
   };
 
@@ -59,13 +69,7 @@ export const LoginPage: React.FC = () => {
 
         {/* Login Form */}
         <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-8">
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {error && (
-              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
-                {error}
-              </div>
-            )}
-
+          <form onSubmit={handleSubmit} className="space-y-6" noValidate>
             {/* Email Field */}
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
@@ -83,6 +87,7 @@ export const LoginPage: React.FC = () => {
                   disabled={isLoading}
                   className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                   placeholder="Enter your email"
+                  autoComplete="email"
                 />
               </div>
             </div>
@@ -104,6 +109,7 @@ export const LoginPage: React.FC = () => {
                   disabled={isLoading}
                   className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                   placeholder="Enter your password"
+                  autoComplete="current-password"
                 />
                 <button
                   type="button"
@@ -116,9 +122,6 @@ export const LoginPage: React.FC = () => {
               </div>
             </div>
 
-            {/* Remember Me & Forgot Password */}
-            <div className="flex items-center justify-between"></div>
-
             {/* Submit Button */}
             <button
               type="submit"
@@ -126,7 +129,10 @@ export const LoginPage: React.FC = () => {
               className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold py-3 px-4 rounded-lg hover:from-blue-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105 disabled:transform-none"
             >
               {isLoading ? (
-                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                <>
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                  <span>Signing in...</span>
+                </>
               ) : (
                 <>
                   <LogIn size={20} />
@@ -148,15 +154,6 @@ export const LoginPage: React.FC = () => {
               </p>
             </div>
           </form>
-        </div>
-
-        {/* Demo Credentials */}
-        <div className="mt-6 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-          <h4 className="text-sm font-medium text-yellow-800 mb-2">Demo Credentials</h4>
-          <div className="text-xs text-yellow-700 space-y-1">
-            <p><strong>Organizer:</strong> organizer@demo.com / password123</p>
-            <p><strong>Attendee:</strong> attendee@demo.com / password123</p>
-          </div>
         </div>
       </div>
     </div>

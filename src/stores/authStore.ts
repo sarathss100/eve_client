@@ -1,6 +1,8 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { User } from '../types';
+import { ticketStoreActions } from './ticketStore';
+import { eventStoreActions } from './eventStore';
 
 interface AuthState {
   user: User | null;
@@ -10,8 +12,8 @@ interface AuthState {
 }
 
 interface AuthActions {
-  login: (email: string, password: string) => Promise<boolean>;
-  register: (name: string, email: string, phoneNumber: string, password: string) => Promise<boolean>;
+  login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
+  register: (name: string, email: string, phoneNumber: string, password: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => Promise<void>;
   updateUser: (user: User) => void;
   initializeAuth: () => void;
@@ -37,67 +39,82 @@ export const useAuthStore = create<AuthStore>()(
         }
       },
 
-      login: async (email: string, password: string): Promise<boolean> => {
+      login: async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
         set({ isLoading: true });
         try {
           const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/auth/signin`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
+              "Cache-Control": "no-store",
             },
             credentials: 'include',
             body: JSON.stringify({ email, password }),
           });
 
+          const data = await response.json();
+
           if (response.ok) {
-            const data = await response.json();
-            
             set({
               user: data.data,
               token: data.token,
               isAuthenticated: true,
               isLoading: false,
             });
-            return true;
+            return { success: true };
+          } else {
+            set({ isLoading: false });
+            return { success: false, error: data.message || 'Invalid credentials' };
           }
-          set({ isLoading: false });
-          return false;
         } catch (error) {
           console.error('Login error:', error);
           set({ isLoading: false });
-          return false;
+          return { 
+            success: false, 
+            error: 'Network error. Please check your connection and try again.' 
+          };
         }
       },
 
-      register: async (name: string, email: string, phone_number: string, password: string): Promise<boolean> => {
+
+      register: async (name: string, email: string, phone_number: string, password: string): Promise<{ success: boolean; error?: string }> => {
         set({ isLoading: true });
         try {
           const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/auth/register`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
+              "Cache-Control": "no-store",
             },
             credentials: 'include',
             body: JSON.stringify({ name, email, phone_number, password }),
           });
 
+          const data = await response.json();
+
           if (response.ok) {
-            const data = await response.json();
-            
             set({
               user: data.data,
               token: data.token,
               isAuthenticated: true,
               isLoading: false,
             });
-            return true;
+            return { success: true };
+          } else {
+            // Handle error response from backend
+            set({ isLoading: false });
+            return { 
+              success: false, 
+              error: data.message || 'Registration failed. Please try again.' 
+            };
           }
-          set({ isLoading: false });
-          return false;
         } catch (error) {
           console.error('Registration error:', error);
           set({ isLoading: false });
-          return false;
+          return { 
+            success: false, 
+            error: 'Network error. Please check your connection and try again.' 
+          };
         }
       },
 
@@ -108,6 +125,7 @@ export const useAuthStore = create<AuthStore>()(
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
+              "Cache-Control": "no-store",
             },
             credentials: 'include',
           });
@@ -122,6 +140,8 @@ export const useAuthStore = create<AuthStore>()(
           });
 
           useAuthStore.persist.clearStorage();
+          ticketStoreActions.clearTickets();
+          eventStoreActions.clearEvents();
         }
       },
 

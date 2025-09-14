@@ -51,6 +51,9 @@ export const EventCard: React.FC<EventCardProps> = ({
   const isEventPast = new Date(event.date) < new Date();
   const isSoldOut = availableTickets <= 0;
 
+  // Only show user ticket if user is authenticated
+  const shouldShowTicket = userTicket && isAuthenticated;
+
   return (
     <>
       <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
@@ -111,7 +114,7 @@ export const EventCard: React.FC<EventCardProps> = ({
 
           {/* Action Button */}
           <div className="flex space-x-3">
-            {userTicket ? (
+            {shouldShowTicket ? (
               <button
                 onClick={() => setShowTicketModal(true)}
                 disabled={isProcessing}
@@ -148,8 +151,8 @@ export const EventCard: React.FC<EventCardProps> = ({
         </div>
       </div>
 
-      {/* Ticket Modal */}
-      {showTicketModal && userTicket && (
+      {/* Ticket Modal - Only show if authenticated and has ticket */}
+      {showTicketModal && shouldShowTicket && (
         <TicketModal
           ticket={userTicket}
           event={event}

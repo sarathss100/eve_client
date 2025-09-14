@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
 
@@ -13,12 +13,8 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   requireAuth = true,
   redirectTo = '/login'
 }) => {
-  const { isAuthenticated, initializeAuth, isLoading } = useAuthStore();
+  const { isAuthenticated, isLoading } = useAuthStore();
   const location = useLocation();
-
-  useEffect(() => {
-    initializeAuth();
-  }, [initializeAuth]);
 
   // Show loading spinner while checking authentication
   if (isLoading) {
@@ -37,7 +33,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 
   // If user is authenticated and trying to access auth pages (login/register)
   if (!requireAuth && isAuthenticated && (location.pathname === '/login' || location.pathname === '/register')) {
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to="/" replace />;
   }
 
   return <>{children}</>;
@@ -60,7 +56,7 @@ export const RoleProtectedRoute: React.FC<RoleProtectedRouteProps> = ({
   }
 
   if (!allowedRoles.includes(user.role)) {
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to="/" replace />;
   }
 
   return <ProtectedRoute {...props}>{children}</ProtectedRoute>;

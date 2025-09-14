@@ -1,38 +1,3 @@
-// import { Routes, Route } from 'react-router-dom';
-// import { AuthProvider } from './contexts/AuthContext';
-// import { Header } from './components/Header';
-// import { Footer } from './components/Footer';
-// import { HomePage } from './pages/HomePage';
-// import { LoginPage } from './pages/LoginPage';
-// import { RegisterPage } from './pages/RegisterPage';
-// import { TicketsPage } from './pages/TicketsPage';
-// import { DashboardPage } from './pages/DashboardPage';
-// import ProfileSettingsPage from './pages/ProfileSettingsPage';
-
-// function App() {
-//   return (
-//     <AuthProvider>
-//         <div className="min-h-screen flex flex-col">
-//           <Header />
-//           <main className="flex-1">
-//             <Routes>
-//               <Route path="/" element={<HomePage />} />
-//               <Route path="/login" element={<LoginPage />} />
-//               <Route path="/register" element={<RegisterPage />} />
-//               <Route path="/tickets" element={<TicketsPage />} />
-//               <Route path="/dashboard" element={<DashboardPage />} />
-//               <Route path="/profile" element={<ProfileSettingsPage />} />
-//             </Routes>
-//           </main>
-//           <Footer />
-//         </div>
-//     </AuthProvider>
-//   );
-// }
-
-// export default App;
-
-// App.tsx
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { Header } from './components/Header';
 import { Footer } from './components/Footer';
@@ -43,8 +8,20 @@ import { RegisterPage } from './pages/RegisterPage';
 import { TicketsPage } from './pages/TicketsPage';
 import { DashboardPage } from './pages/DashboardPage';
 import ProfileSettingsPage from './pages/ProfileSettingsPage';
+import { useAuthStore } from './stores/authStore';
+import { useEffect } from 'react';
+
+// React-Toastify imports
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 function App() {
+  const { initializeAuth } = useAuthStore();
+
+  useEffect(() => {
+    initializeAuth();
+  }, [initializeAuth]);
+
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
@@ -112,6 +89,21 @@ function App() {
         </Routes>
       </main>
       <Footer />
+      
+      {/* Toast Container */}
+      <ToastContainer
+        position="top-right"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+        className="mt-16"
+      />
     </div>
   );
 }
