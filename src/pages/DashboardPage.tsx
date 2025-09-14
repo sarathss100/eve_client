@@ -150,6 +150,7 @@ export const DashboardPage: React.FC = () => {
 
       if (response.ok) {
         await fetchOrganizerEvents()
+        await fetchUserTicketsForOrganizer(token || '')
         setShowDeleteModal(false)
         setDeletingEvent(null)
       }
